@@ -15,8 +15,8 @@ class TodoList extends Component {
     this.handleChangeInput = this.handleChangeInput.bind(this);
     this.handleReset = this.handleReset.bind(this);
     this.handleCreate = this.handleCreate.bind(this);
-    this.handleToggle = this.handleToggle.bind(this);
-    this.handleDelete = this.handleDelete.bind(this);
+    // this.handleToggle = this.handleToggle.bind(this);
+    // this.handleDelete = this.handleDelete.bind(this);
   }
 
   componentDidMount() {
@@ -24,12 +24,12 @@ class TodoList extends Component {
     this.props.fetchAllTodoList();
   }
 
-  handleDelete() {
-    this.props.deleteTodo();
+  handleDelete(item) {
+    this.props.deleteTodo(item.id);
   }
 
-  handleToggle() {
-    this.props.toggleTodo();
+  handleToggle(item) {
+    this.props.toggleTodo(item.id);
   }
 
   handleChangeInput(e) {
@@ -66,8 +66,8 @@ class TodoList extends Component {
             return <TodoItemView 
               key={item.id}
               item={item} 
-              onDelete={this.handleDelete}
-              onToggle={this.handleToggle}
+              onDelete={this.handleDelete.bind(this, item)}
+              onToggle={this.handleToggle.bind(this, item)}
             />
           }) : null}
         </ul>

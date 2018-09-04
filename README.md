@@ -2,7 +2,7 @@
 This project is set up for studying all kinds of frontend frameworks. Each branch stands for one standalone frameowork related eco-technologies.
 
 ## Branches - 20180904
-- **master**: react16, react-redux, react-saga, react-jss, IndexedDB, webpack3
+- **master**: react16, react-redux, react-saga, redux-observable, IndexedDB, webpack3
 
 ## Master branch info
 This project's code structure is referred from the tutorial of book 《React 进阶之路》. Based on the provided structure, I replace the HTTP API call with IndexedDB.

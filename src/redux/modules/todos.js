@@ -1,9 +1,11 @@
 import { get, set } from 'idb-keyval';
-import { Observable } from '../../../node_modules/rxjs';
 
 const initalState = {
   todoList: []
 };
+
+// const DB_NAME = 'TODO_APP';
+const KEY_TODO_LIST = 'TODO_LIST';
 
 export const types = {
   FETCH_ALL_TODO: 'TODO/FETCH_ALL_TODO',
@@ -14,10 +16,8 @@ export const types = {
 
 export const actions = {
   fetchAllTodoList: () => {
-    console.log('[action fetchAllTodoList]');
     return (dispatch, getState) => {
-      return get('TODO_LIST').then(val => {
-        console.log('xxxx', val);
+      return get(KEY_TODO_LIST).then(val => {
         dispatch({
           type: types.FETCH_ALL_TODO,
           todoList: val
@@ -32,10 +32,10 @@ export const actions = {
         name: name,
         isDone: false
       };
-      get('TODO_LIST').then(val => {
+      get(KEY_TODO_LIST).then(val => {
         let todoList = val || [];
         todoList.push(param);
-        set('TODO_LIST', todoList).then(result => {
+        set(KEY_TODO_LIST, todoList).then(result => {
           dispatch({
             type: types.CREATE_TODO,
             todoList: todoList
@@ -45,18 +45,36 @@ export const actions = {
     }
   },
   deleteTodo: (id) => {
-    return (dispatch, getState) => {
-      dispatch({
-        type: types.DELETE_TODO,
-        todoList: []
+    return dispatch => {
+      get(KEY_TODO_LIST).then(val => {
+        const list = val;
+        if (list && list.some(item => item.id === id)) {
+          list.splice(list.findIndex(item => item.id === id), 1);
+          set(KEY_TODO_LIST, list).then(() => {
+            dispatch({
+              type: types.DELETE_TODO,
+              todoList: list
+            });
+          });
+        }
       });
     }
   },
-  toggleTodo: (todo)  => {
-    return (dispatch, getState) => {
-      dispatch({
-        type: types.TOGGLE_TODO,
-        todo: { ...todo, isDone: !todo.isDone }
+  toggleTodo: (id)  => {
+    return dispatch => {
+      get(KEY_TODO_LIST).then(val => {
+        let list = val;
+        list.forEach(item => {
+          if (item.id === id) {
+            item.isDone = !item.isDone;
+          }
+        });
+        set(KEY_TODO_LIST, list).then(() => {
+          dispatch({
+            type: types.TOGGLE_TODO,
+            todoList: list
+          });
+        });
       });
     }
   }
@@ -67,8 +85,8 @@ const reducer = (state = initalState, action) => {
     case types.FETCH_ALL_TODO:
     case types.TOGGLE_TODO:
     case types.CREATE_TODO:
-      return { ...state, todoList: action.todoList };
     case types.DELETE_TODO:
+      return { ...state, todoList: action.todoList };
     default:
       return state;
   }
