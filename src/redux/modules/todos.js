@@ -1,3 +1,6 @@
+import { get, set } from 'idb-keyval';
+import { Observable } from '../../../node_modules/rxjs';
+
 const initalState = {
   todoList: []
 };
@@ -11,19 +14,33 @@ export const types = {
 
 export const actions = {
   fetchAllTodoList: () => {
+    console.log('[action fetchAllTodoList]');
     return (dispatch, getState) => {
-      dispatch({
-        type: types.FETCH_ALL_TODO,
-        todoList: []
-      });
+      return get('TODO_LIST').then(val => {
+        console.log('xxxx', val);
+        dispatch({
+          type: types.FETCH_ALL_TODO,
+          todoList: val
+        });
+      })
     }
   },
   createTodo: (name) => {
-    console.log('handleCreate', name);
     return (dispatch, getState) => {
-      dispatch({
-        type: types.CREATE_TODO,
-        todo: { id: new Date().getTime(), name: name }
+      const param = {
+        id: new Date().getTime(),
+        name: name,
+        isDone: false
+      };
+      get('TODO_LIST').then(val => {
+        let todoList = val || [];
+        todoList.push(param);
+        set('TODO_LIST', todoList).then(result => {
+          dispatch({
+            type: types.CREATE_TODO,
+            todoList: todoList
+          });
+        });
       });
     }
   },
@@ -49,8 +66,8 @@ const reducer = (state = initalState, action) => {
   switch(action.type) {
     case types.FETCH_ALL_TODO:
     case types.TOGGLE_TODO:
-      return action.todoList;
-    case types.ADD_TODO:
+    case types.CREATE_TODO:
+      return { ...state, todoList: action.todoList };
     case types.DELETE_TODO:
     default:
       return state;
@@ -59,6 +76,6 @@ const reducer = (state = initalState, action) => {
 
 export default reducer;
 
-export const fetchAllTodoList = state => {
+export const fetchAllTodos = state => {
   return state.todos.todoList;
 }

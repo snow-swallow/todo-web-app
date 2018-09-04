@@ -3,7 +3,7 @@ import TodoItemView from './components/TodoItemView';
 
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { actions as todoActions, fetchAllTodoList } from '../../redux/modules/todos';
+import { actions as todoActions, fetchAllTodos } from '../../redux/modules/todos';
 
 class TodoList extends Component {
 
@@ -14,12 +14,13 @@ class TodoList extends Component {
     };
     this.handleChangeInput = this.handleChangeInput.bind(this);
     this.handleReset = this.handleReset.bind(this);
+    this.handleCreate = this.handleCreate.bind(this);
     this.handleToggle = this.handleToggle.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
-    this.handleCreate = this.handleCreate.bind(this);
   }
 
   componentDidMount() {
+    console.log('[TodoList componentDidMount]');
     this.props.fetchAllTodoList();
   }
 
@@ -44,13 +45,10 @@ class TodoList extends Component {
   }
 
   handleCreate(e) {
-    this.props.createTodo({
-      value: e.target.value
-    });
+    this.props.createTodo(this.state.value);
   }
 
   render() {
-    console.log(this.props);
     const todoList = this.props.todoList || [];
     return (
       <div>
@@ -79,9 +77,9 @@ class TodoList extends Component {
 }
 
 
-const mapStateToProps = (state, props) => {
+const mapStateToProps = state => {
   return {
-    todoList: fetchAllTodoList(state)
+    todoList: fetchAllTodos(state)
   }
 };
 
