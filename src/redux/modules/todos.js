@@ -16,7 +16,7 @@ export const types = {
 
 export const actions = {
   fetchAllTodoList: () => {
-    return (dispatch, getState) => {
+    return dispatch => {
       return get(KEY_TODO_LIST).then(val => {
         dispatch({
           type: types.FETCH_ALL_TODO,
@@ -32,53 +32,59 @@ export const actions = {
         name: name,
         isDone: false
       };
-      get(KEY_TODO_LIST).then(val => {
-        let todoList = val || [];
-        todoList.push(param);
-        set(KEY_TODO_LIST, todoList).then(result => {
-          dispatch({
-            type: types.CREATE_TODO,
-            todoList: todoList
-          });
+      (async function() {
+        let list = (await get(KEY_TODO_LIST)) || [];
+        list.push(param);
+        await set(KEY_TODO_LIST, list);
+        return list;
+      })().then(resultList => {
+        dispatch({
+          type: types.CREATE_TODO,
+          todoList: resultList
         });
       });
     }
   },
   deleteTodo: (id) => {
     return dispatch => {
-      get(KEY_TODO_LIST).then(val => {
-        const list = val;
-        if (list && list.some(item => item.id === id)) {
-          list.splice(list.findIndex(item => item.id === id), 1);
-          set(KEY_TODO_LIST, list).then(() => {
-            dispatch({
-              type: types.DELETE_TODO,
-              todoList: list
-            });
-          });
-        }
+      deleteAndUpdate(id, list => {
+        dispatch({
+          type: types.DELETE_TODO,
+          todoList: list
+        });
       });
     }
   },
   toggleTodo: (id)  => {
     return dispatch => {
-      get(KEY_TODO_LIST).then(val => {
-        let list = val;
-        list.forEach(item => {
-          if (item.id === id) {
-            item.isDone = !item.isDone;
-          }
-        });
-        set(KEY_TODO_LIST, list).then(() => {
-          dispatch({
-            type: types.TOGGLE_TODO,
-            todoList: list
-          });
+      toggleAndUpdate(id, list => {
+        dispatch({
+          type: types.TOGGLE_TODO,
+          todoList: list
         });
       });
     }
   }
 }
+
+const deleteAndUpdate = async function (id, callback) {
+  let list = await get(KEY_TODO_LIST);
+  if (list && list.some(item => item.id === id)) {
+    list.splice(list.findIndex(item => item.id === id), 1);
+    await set(KEY_TODO_LIST, list);
+  }
+  await callback(list);
+}
+const toggleAndUpdate = async function (id, callback) {
+  let list = await get(KEY_TODO_LIST);
+  list.forEach(item => {
+    if (item.id === id) {
+      item.isDone = !item.isDone;
+    }
+  });
+  await set(KEY_TODO_LIST, list);
+  await callback(list);
+};
 
 const reducer = (state = initalState, action) => {
   switch(action.type) {
