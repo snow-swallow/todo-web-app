@@ -1,11 +1,11 @@
-import { get, set } from 'idb-keyval';
+import IDB from '../../utils/db';
+
+const idb = new IDB();
+const KEY_TODO_LIST = 'TODO_LIST';
 
 const initalState = {
   todoList: []
 };
-
-// const DB_NAME = 'TODO_APP';
-const KEY_TODO_LIST = 'TODO_LIST';
 
 export const types = {
   FETCH_ALL_TODO: 'TODO/FETCH_ALL_TODO',
@@ -17,7 +17,7 @@ export const types = {
 export const actions = {
   fetchAllTodoList: () => {
     return dispatch => {
-      return get(KEY_TODO_LIST).then(val => {
+      return idb.get(KEY_TODO_LIST).then(val => {
         dispatch({
           type: types.FETCH_ALL_TODO,
           todoList: val
@@ -33,9 +33,9 @@ export const actions = {
         isDone: false
       };
       (async function() {
-        let list = (await get(KEY_TODO_LIST)) || [];
+        let list = (await idb.get(KEY_TODO_LIST)) || [];
         list.push(param);
-        await set(KEY_TODO_LIST, list);
+        await idb.set(KEY_TODO_LIST, list);
         return list;
       })().then(resultList => {
         dispatch({
@@ -68,21 +68,21 @@ export const actions = {
 }
 
 const deleteAndUpdate = async function (id, callback) {
-  let list = await get(KEY_TODO_LIST);
+  let list = await idb.get(KEY_TODO_LIST);
   if (list && list.some(item => item.id === id)) {
     list.splice(list.findIndex(item => item.id === id), 1);
-    await set(KEY_TODO_LIST, list);
+    await idb.set(KEY_TODO_LIST, list);
   }
   await callback(list);
 }
 const toggleAndUpdate = async function (id, callback) {
-  let list = await get(KEY_TODO_LIST);
+  let list = await idb.get(KEY_TODO_LIST);
   list.forEach(item => {
     if (item.id === id) {
       item.isDone = !item.isDone;
     }
   });
-  await set(KEY_TODO_LIST, list);
+  await idb.set(KEY_TODO_LIST, list);
   await callback(list);
 };
 
